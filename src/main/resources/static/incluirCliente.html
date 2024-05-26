@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+    <head>
+		<title>Sistema de Cadastro de Pacientes</title>
+        <meta charset="UTF-8">
+		<link rel="stylesheet" href="style.css">
+    </head>
+    <body onload="javascript:trataOnload()">
+        <div align="center">
+			<!--<div class="headLogin">-->
+			<!--<img src="src/images.png">-->
+			<h3>Incluir Paciente</h3>
+			<div class="divIncluir">
+				<table>
+				<tr>
+					<td>
+						E-mail
+					</td>
+					<td>
+						<input type="text" id="email" name="email" required placeholder="Digite o email">	
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Nome
+					</td>
+					<td>
+						<input type="text" id="nome" name="nome" required placeholder="Digite o nome">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Telefone
+					</td>
+					<td>
+						<input type="text" id="telefone" name="telefone" required placeholder="Digite o telefone" onkeyup="javascript:formatarTelefone()">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Última Consulta
+					</td>
+					<td>
+						<input type="text" id="ultimaConsulta" name="ultimaConsulta" required placeholder="Digite a última consulta" onkeyup="javascript:formatarData()">
+					</td>
+				</tr>
+				</table>
+				<br>
+		        <center>
+					<button type="button" onclick = "javascript:incluir()">Incluir</button>
+					<button type="button" onclick = "javascript:cancelar()">Cancelar</button>			
+				</center>
+			</div>
+		</div>	
+    </body>
+    <script>
+		function trataOnload() {
+			const email = document.getElementById("email");
+			email.focus();
+		}
+		
+		function cancelar(){
+			document.location.href = "listarCliente.html";
+		}
+		
+        async function incluir() {
+            const email = document.getElementById("email").value;
+            const nome = document.getElementById("nome").value;
+			const telefone = document.getElementById("telefone").value;
+			const ultimaConsulta = document.getElementById("ultimaConsulta").value;
+            
+			// validações
+            if (email=="") {
+                alert ("Digite o email");
+                return;
+            }
+			
+			if(nome==""){
+                alert ("Digite o nome");
+                return;
+            }
+			
+			if(somenteNumeros(telefone).length<8){
+				alert("O telefone deve ter 8 ou 9 números");
+				return;
+			}
+			
+			if(somenteNumeros(ultimaConsulta).length!=8){
+				alert("Data da última consulta inválida");
+				return;
+			}
+			
+            const dados = {
+                "email": email,
+                "nome": nome,
+				"telefone": somenteNumeros(telefone),
+				"ultimaConsulta": dataAMD(ultimaConsulta,"")
+            }			
+
+            console.log(dados)
+
+            // chama o serviço de login 
+            await fetch("http://localhost:8080/incluirCliente", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dados)
+
+            }).then(response => {
+                if (response.status == 200 /*OK*/) {
+                    alert("Inclusão efetuada");
+					cancelar(); 
+                }else if(response.status==400){
+                    alert("E-mail já cadastrado");										
+                }else{
+					alert("Erro ao incluir");
+				}
+				
+            }).catch(e => {
+                alert("Erro:", e.toString())
+            })
+        }
+		
+		function sair(){
+			document.location.href = "listarCliente.html";
+			var s;
+			var r=confirm("Deseja sair do sistema?");
+			if (r=true){
+				s="OK";	
+			}else {
+				s="Cancelar";
+			}	  	
+		}	
+	  
+		function somenteNumeros(texto){
+			// https://stackoverflow.com/questions/1183903/regex-using-javascript-to-return-just-numbers
+			return texto.replace(/\D/g, '');
+		}
+	  
+	  function formatarData(){
+		var data = somenteNumeros(document.getElementById("ultimaConsulta").value);
+		var tam = data.length;
+		var r = "";
+		
+		//console.log('data:' + data + ' - tam:' + tam);
+		//01234567
+		//28072005 > 28/07/2005
+		if(tam > 8){
+			data = data.substring(0,8); // pega os 8 primeiros números
+		}	
+				
+		switch(tam){
+			case 1:		
+				r = data; break;
+			case 2:		
+				r = data; break;				
+			case 3:
+				r = data.substring(0,2) + "/" + data.substring(2,3); break;				
+			case 4:
+				r = data.substring(0,2) + "/" + data.substring(2,4); break;
+			case 5:
+				r = data.substring(0,2) + "/" + data.substring(2,4) + "/" + data.substring(4,5); break;
+			case 6:
+				r = data.substring(0,2) + "/" + data.substring(2,4) + "/" + data.substring(4,6); break;
+			case 7:
+				r = data.substring(0,2) + "/" + data.substring(2,4) + "/" + data.substring(4,7); break;
+			case 8:
+				r = data.substring(0,2) + "/" + data.substring(2,4) + "/" + data.substring(4,8); break;			
+			default:
+				r = data; break;
+		}
+		
+		//console.log("r:" + r);
+		document.getElementById("ultimaConsulta").value = r;
+		
+	  }  
+	  
+	  function formatarTelefone(){
+		var data = somenteNumeros(document.getElementById("telefone").value);
+		var tam = data.length;
+		var r = "";
+		
+		//console.log('data:' + data + ' - tam:' + tam);
+		//01234567890
+		//999999999 > 99999-9999
+		
+		if(tam > 9){
+			data = data.substring(0,9); // pega os 9 primeiros números
+		}
+		
+		switch(tam){
+			case 1:
+			case 2:		
+			case 3:
+			case 4:
+				r = data; break;
+			case 5:
+				r = data.substring(0,4) + "-" + data.substring(4,5); break;
+			case 6:
+				r = data.substring(0,4) + "-" + data.substring(4,6); break;
+			case 7:
+				r = data.substring(0,4) + "-" + data.substring(4,7); break;			
+			case 8:
+				r = data.substring(0,4) + "-" + data.substring(4,8); break;
+			case 9:
+				r = data.substring(0,5) + "-" + data.substring(5,9); break;			
+			default:
+				r = data; break;
+		}
+		
+		//console.log("r:" + r);
+		document.getElementById("telefone").value = r;
+	  }
+	  
+	  function dataAMD(data,separador){
+		// entra: dd/mm/aaaa
+		// sai  : aaaa/mm/dd (con ou sem separador)
+		console.log("data:" + data);
+				
+		var d = somenteNumeros(data);
+		var tam = d.length;
+		console.log("[A]d:" + d);
+		
+		if(tam > 8){
+			d = d.substring(0,8); // pega os 8 primeiros números
+		}
+		
+		if(tam == 8){			
+			var dia = d.substring(0,2);
+			var mes = d.substring(2,4);
+			var ano = d.substring(4,8); 
+			d = ano + separador + mes + separador + dia;
+		}		
+		
+		console.log("[A]d:" + d);
+		return d;	
+	}
+    </script>
+</html>

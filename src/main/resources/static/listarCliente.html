@@ -1,0 +1,273 @@
+<html lang="pt-br">
+   <head>
+		<meta charset="UTF-8">
+		<link rel="stylesheet" href="style.css">
+	</head>
+
+	<body onload="novaconsulta()"> 
+		<div align="center">
+			<h3>Listar Pacientes</h3>	
+		</div>
+		
+		<div align="center" id="divfiltro">			
+			<fieldset>
+			  <legend>Filtro:</legend>
+			  <input type="radio" id="0m" name="rdmes" value=0 checked> 
+			  <label for="html">Tudo</label><br>
+			  
+			  <input type="radio" id="3m" name="rdmes" value=3> 
+			  <label for="html">3 meses</label><br>
+			  			  
+			  <input type="radio" id="6m" name="rdmes" value=6>
+  			  <label for="seismeses">6 meses</label><br>
+			  
+			  <input type="radio"s id="12m" name="rdmes" value=12>
+  			  <label for="dozemeses">12 meses</label><br>			  
+			</fieldset>
+			<br>
+			<br>
+			<button type="button" onclick="listar()">Listar</button>
+			<button type="button" onclick = "novo()">Novo</button>
+			<button type="button" onclick = "sair()">Sair</button> 
+		</div>
+		
+		
+		<div align="center" id="divlista">
+			<div id="divResultado"></div>
+			<br>
+			<button type="button" onclick = "novaconsulta()">Nova Consulta</button>
+		</div>
+	</body>
+	
+	<script>
+	function listar() {
+		// estilos
+		const sta = "style='background-color: dodgerblue; width:40%;'";
+		const std = "style='background-color: white; text-align: center;'";
+		const ico = "style='height: 25px; width: 25px; cursor: pointer;'";
+		const linha = "<tr>" +
+					  "<td {std}>{nome}</td>" +
+				      "<td {std}>{email}</td>" +
+					  "<td {std}>{telefone}</td>" +
+					  "<td {std}>{ultimaConsulta}</td>" +
+					  "<td {std}><img {ico} src='img/excluir.png' onclick='excluir({id})'></td>" + 
+				  	  "</tr>";
+		
+		var saida ="<table {sta}>" + 
+					"<tr>" +
+					"  <th>Nome</th>" + 
+					"  <th>Email</th>" +
+					"  <th>Telefone</th>" +
+					"  <th>Ultima Consulta</th>" +
+					"  <th>Excluir</th>" +
+					"</tr>" +
+					"{linhas}" +
+					"</table>";
+		var linhas = "";
+		var divTabela = document.getElementById("divResultado"); // resultado
+						
+		fetch("http://localhost:8080/listarCliente",{
+		    method: "GET",
+			headers: {
+			    'Content-Type': 'application/json'
+			},
+			body:JSON.stringify(listar)
+					
+		}).then(response => {
+			if (response.status == 200 /*OK*/) {				
+			    return response.json();								               
+			} else {
+			    alert("Erro ao listar pacientes!")
+				divTabela.innerHTML = "Erro ao listar pacientes!"; //coloca erro no div
+			} 
+		
+		}).then(data => {
+			var rdmes = document.querySelector('input[name = rdmes]:checked').value;
+			var hoje = hojeAMD();						
+			var qtd=0;
+			
+			// ajusta o título da página
+			if(rdmes==0){
+				document.getElementById.innerHTML = "Listar Pacientes - Tudo";	
+			}else{
+				document.getElementById.innerHTML = "Listar Pacientes - " + rdmes + " meses";
+			}
+			  
+			
+			//pegar hoje AAAAMMDD
+			//pegar item.ultimaConsulta + 6meses
+			//mostrar se: ultima+meses <= hoje			
+									
+			//percorrer os clientes			
+			for(var item of data){
+				//console.log("nome:" + item.nome + " - email:" + item.email);
+				var ultima = somaMesesData(item.ultimaConsulta, rdmes);
+				if(Number(ultima) <= Number(hoje)){
+					//adiciona na saída
+					qtd++;
+					linhas = linhas + linha;
+					linhas = linhas.replace("{id}", item.id)
+									.replace("{nome}", item.nome)
+								   	.replace("{email}", item.email)
+								   	.replace("{telefone}", item.telefone)
+								   	.replace("{ultimaConsulta}", dataDMA(item.ultimaConsulta,"/"))
+								   	.replace("{std}", std)
+								   	.replace("{std}", std)
+								   	.replace("{std}", std)
+								   	.replace("{std}", std)
+								   	.replace("{std}", std)
+								   	.replace("{ico}", ico);				
+				}//if				
+			} //for
+			
+			//substituir linhas na saída
+			saida = saida.replace("{linhas}", linhas)
+						 .replace("{sta}", sta)
+						 .replace("{sta}", sta)
+						 .replace("{sta}", sta)
+						 .replace("{sta}", sta)
+						 .replace("{sta}", sta)
+						 .replace("{sta}", sta);			
+			//console.log(saida);						
+			
+			if(qtd==0){
+				//lista vazia
+				divTabela.innerHTML = "<h3 style='background-color:white; color:tomato;'>Não há itens</h3>";
+			}else{
+				divTabela.innerHTML = saida; //coloca a saída no div
+			}
+			
+			document.getElementById("divfiltro").style.display="none";
+			document.getElementById("divlista").style.display="block";
+
+	    }).catch(e => {
+			alert("Erro:", e.toString())
+	    })
+	
+	}
+	
+	function novaconsulta(){
+		document.getElementById("divfiltro").style.display="block";
+		document.getElementById("divlista").style.display="none";
+		document.getElementById("tituloPagina").innerHTML = "Listar Clientes";
+	}
+	
+	function excluir(id) {
+		if (confirm("Confirma exclusão?") != true){
+			return;	// não continua
+		}
+				
+		
+  		var url = "http://localhost:8080/excluirCliente/{id}"
+        fetch(url.replace("{id}", id), {
+            method: "DELETE",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            //body: JSON.stringify(dados)
+
+        }).then(response => {
+            if (response.status == 204 /*OK*/) {
+                alert("Exclusão realizada!")
+				listar();
+				 
+            } else if (response.status == 401 /*Unauthorized*/) {
+                alert("Conta inválida!")
+            } else if (response.status == 404 /*Not Found*/) {
+                alert("Conta não encontrada!")
+            }  
+        }).catch(e => {
+            alert("Erro:", e.toString())
+        })
+   	 }
+	
+	//  1
+	// 01 
+	 
+	function novo(){
+		document.location.href = "incluirCliente.html";
+	}
+	
+	function sair(){
+		if (confirm("Deseja sair do sistema?") == true){
+			document.location.href = "login.html";	
+		}
+	}
+	
+	function somenteNumeros(texto){
+		// https://stackoverflow.com/questions/1183903/regex-using-javascript-to-return-just-numbers
+		return texto.replace(/\D/g, '');
+	}
+	
+	function dataDMA(data,separador){
+		var d = somenteNumeros(data);
+		var tam = d.length;
+		
+		if(tam > 8){
+			d = data.substring(0,8); // pega os 8 primeiros números
+		}
+			
+		if(tam == 8){			
+			var ano = d.substring(0,4);
+			var mes = d.substring(4,6);
+			var dia = d.substring(6,8); 
+			d = dia + separador + mes + separador + ano;
+		}		
+		return d;	
+	}
+	
+	//criar função de formatação
+	function formataDataAMD(data, separador){
+		//entra: data AMD desformatada
+		//sai  : data AMD formatada
+		var d = somenteNumeros(data);
+		var tam = d.length;
+		
+		if(tam > 8){
+			d = data.substring(0,8); // pega os 8 primeiros números
+		}
+			
+		if(tam == 8){			
+			var ano = d.substring(0,4);
+			var mes = d.substring(4,6);
+			var dia = d.substring(6,8); 
+			d = ano + separador + mes + separador + dia;
+		}		
+		return d;		
+	}
+	
+	function somaMesesData(dataAMD, meses){
+		var data = new Date(formataDataAMD(dataAMD,"/"));
+		data.setMonth(data.getMonth() + Number(meses));
+		
+		var dia = data.getDate().toString();
+		var mes = (data.getMonth() + 1).toString(); //0=Janeiro
+		var ano = data.getFullYear().toString();
+		
+		if(dia<10){ // completa com zero à esquerda
+			dia = "0".concat(dia);
+		}
+		if(mes<10){ // completa com zero à esquerda
+			mes = "0".concat(mes);
+		}
+		
+		return ano.concat(mes).concat(dia);
+	}
+	
+	function hojeAMD(){
+		var data = new Date();
+		var dia = data.getDate().toString();
+		var mes = (data.getMonth() + 1).toString(); //0=Janeiro
+		var ano = data.getFullYear().toString();
+		
+		if(dia<10){ // completa com zero à esquerda
+			dia = "0".concat(dia);
+		}
+		if(mes<10){ // completa com zero à esquerda
+			mes = "0".concat(mes);
+		}
+		return ano.concat(mes).concat(dia);
+	}
+	
+	</script>
+</html>

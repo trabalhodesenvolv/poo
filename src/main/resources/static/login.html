@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+    <head>
+		<title>Sistema de Cadastro de Pacientes</title>
+        <meta charset="UTF-8">
+		<link rel="stylesheet" href="style.css">
+    </head>
+    <body onload="javascript:trataOnload()">
+        <div align="center">			
+			<h3>Login</h3>
+			<div class="divLogin">
+				<table>
+				<tr>
+					<td>
+						E-mail
+					</td>
+					<td>
+						<input type="text" id="email" name="email" required placeholder="Digite seu email">	
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Senha
+					</td>
+					<td>
+						<input type="password" id="senha" name="senha" required placeholder="Digite sua senha">
+					</td>
+				</tr>
+				</table>
+				<br>
+		        <center>
+					<button type="button" onclick = "javascript:fazLogin()">Enviar</button>			
+				</center>
+			</div>
+		</div>	
+    </body>
+    <script>
+		function trataOnload() {
+			const email = document.getElementById("email");
+			email.focus();
+		}
+		
+        function fazLogin() {
+            const email = document.getElementById("email").value;
+            const senha = document.getElementById("senha").value;
+            
+            if (email=="") {
+                alert ("Digite seu email");
+                return;
+            }else if(senha==""){
+                alert ("Digite sua senha");
+                return;
+            }
+			
+            const dados = {
+                "email": email,
+                "senha": senha
+            }
+
+            console.log(dados)
+
+            // chama o serviço de login 
+            fetch("http://localhost:8080/login", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dados)
+
+            }).then(response => {
+                if (response.status == 200 /*OK*/) {
+                    //alert("Entrada com sucesso!")
+                    document.location.href = "listarCliente.html";
+                    
+                } else if (response.status == 401 /*Unauthorized*/) {
+                    alert("Credenciais inválidas!")
+                } else if (response.status == 404 /*Not Found*/) {
+                    alert("Conta não encontrada!")
+                } else {
+                    console.log(response)
+                    alert("Ocorreu uma falha")
+                }
+            }).catch(e => {
+                alert("Erro:", e.toString())
+            })
+        }
+    </script>
+
+</html>

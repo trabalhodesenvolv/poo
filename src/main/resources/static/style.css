@@ -1,0 +1,88 @@
+
+BODY, HTML {
+	font-family: Georgia, 'Times New Roman', Times, serif;
+	font-size: 12px; 
+}
+
+H1 {
+	background-color: dodgerblue;
+	padding:10
+	px;
+	color:white;
+}
+H3 {
+	background-color: dodgerblue;
+	padding:5px;
+	color:white;
+}
+
+BUTTON {
+	background-color: dodgerblue;
+	border-radius: 5px;
+	color: white;
+	min-width: 100px;
+}
+
+FIELDSET {
+	text-align: left;
+	width: 30%;
+	display:inline;
+}
+
+input[type="radio"] {
+  display: inline;
+  margin-right: 10px;
+}
+.content {
+	text-align: center;
+}
+
+.divLogin {
+	height: 100px;
+	width: 250px;
+	padding: 20px;
+}
+
+
+.clientes {
+	border: 1px solid #ccc;
+	padding: 1rem;
+}
+
+.divIncluir {
+	height: 100px;
+	width: 250px;
+	padding: 5px;
+}
+/*div {
+	padding-top: 10px;
+}*/
+
+.headLogin img {
+	width: 40%;
+}
+
+/*.tabLista {
+	background-color: dodgerblue;
+	TR {
+		TD {
+			background-color: white;
+		}
+	}
+}*/
+
+.divResultado {
+	height: 100px;
+	width: 250px;
+	padding: 20px;
+}
+
+#divfiltro {
+	display: block;
+	/*border: solid 1px red;*/
+}
+
+#divlista {
+	display: none;
+	/*border: solid 1px blue;*/
+}
